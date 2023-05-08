@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "my first full app \"cinema\" on calsses",
   "main": "app.js",
+  "type": "module",
   "scripts": {
+    "start": "live-server",
+    "build": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,6 +19,12 @@
   "author": "Muhammad Zhebarov",
   "license": "ISC",
   "devDependencies": {
-    "rollup": "^3.21.2"
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "eslint": "^8.39.0",
+    "rollup": "^3.21.2",
+    "rollup-plugin-import-css": "^3.2.1"
+  },
+  "dependencies": {
+    "on-change": "^4.0.2"
   }
 }
