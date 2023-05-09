@@ -1026,13 +1026,18 @@
     }
 
     class Header extends DivComponent {
-        constructor(appState) {
+        constructor(appState, state) {
             super();
             this.appState = appState;
+            this.state = state;
+        }
+
+        search() {
+            const value = this.el.querySelector('input').value;
+            this.state.searchQuery = value;
         }
 
         render() {
-            this.el.innerHTML = '';
             this.el.classList.add('header');
             this.el.innerHTML = `
             <h1 class="header__logo"><span id="r">Ray</span>&<span id="m">Mag</span> <br>
@@ -1040,17 +1045,48 @@
             <nav class="header__menu">
                 <ul class="menu">
                     <div class="search">
-                        <input type="text" class="search__input">
+                        <input
+                            type="text"
+                            class="search__input"
+                            placeholder="Найти книгу или автора..."
+                            value="${this.state.searchQuery ? this.state.searchQuery : ''}">
                         <button class="search__button">
                             <img class="search__icon" width="22px" src="/static/icons/search.min.svg" alt="Иконка поиска">
                         </button>
                     </div>
                     <li class="menu__item"><a href="#" class="item__link">Главная</a></li>
-                    <li class="menu__item"><a href="#" class="item__link">Избранное
+                    <li class="menu__item"><a href="#favorites" class="item__link">Избранное
                         <div class="favorites__counter">${this.appState.favorites.length}</div>
                     </a></li>
                 </ul>
              </nav>
+        `;
+            this.el.querySelector('.search__button').addEventListener('click', this.search.bind(this));
+            this.el.querySelector('.search__input').addEventListener('keydown', (event) => {
+                if(event.code === 'Enter') {
+                    this.search();
+                }
+            });
+            return this.el;
+        }
+    }
+
+    class CardList extends DivComponent {
+        constructor(appState, parentState) {
+            super();
+            this.appState = appState;
+            this.parentState = parentState;
+        }
+
+        render() {
+            if(this.parentState.loading) {
+                this.el.innerHTML = `<div class="card-list__loader">Загрузка...</div>`;
+                return this.el;
+            }
+            this.el.classList.add('card-list');
+            this.el.innerHTML = `
+        
+            <h1>Результаты поиска - ${this.parentState.list.length} фильмов</h1>
         `;
             return this.el;
         }
@@ -1068,6 +1104,7 @@
             super();
             this.appState = appState;
             this.appState = onChange(this.appState, this.appStateHook.bind(this));
+            this.state = onChange(this.state, this.stateHook.bind(this));
             this.setTitle('R&M Cinema');
         }
 
@@ -1077,15 +1114,39 @@
             }
         }
 
+        async stateHook(path) {
+            if(path === 'searchQuery') {
+                this.state.loading = true;
+                const data = await this.loadList(this.state.searchQuery, this.state.offset);
+                this.state.loading = false;
+                this.state.list = data.docs;
+                console.log(data);
+            }
+            if(path === 'list' || path === 'loading') {
+                this.render();
+            }
+        }
+
+        async loadList(q, offset) {
+            const response = await fetch(`https://api.kinopoisk.dev/v1.3/movie?&page=1&limit=10&q=${q}&offset=${offset}`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-API-KEY": "KSKQQPQ-85ZM6SB-P3GVMAR-X6KRVJ4"
+                }
+              });
+            return response.json();
+        }
+
         render() {
             const main = document.createElement('div');
+            main.append(new CardList(this.appState, this.state).render());
             this.app.innerHTML = '';
             this.app.append(main);
             this.renderHeader();
         }
 
         renderHeader() {
-            const header = new Header(this.appState).render();
+            const header = new Header(this.appState, this.state).render();
             this.app.prepend(header);
         }
     }
