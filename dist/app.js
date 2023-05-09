@@ -1015,6 +1015,47 @@
     onChange.target = proxy => (proxy && proxy[TARGET]) || proxy;
     onChange.unsubscribe = proxy => proxy[UNSUBSCRIBE] || proxy;
 
+    class DivComponent {
+        constructor() {
+            this.el = document.createElement('div');
+        }
+
+        render() {
+            this.el;
+        }
+    }
+
+    class Header extends DivComponent {
+        constructor(appState) {
+            super();
+            this.appState = appState;
+        }
+
+        render() {
+            this.el.innerHTML = '';
+            this.el.classList.add('header');
+            this.el.innerHTML = `
+            <h1 class="header__logo"><span id="r">Ray</span>&<span id="m">Mag</span> <br>
+                <span class="cinema">cinema</span></h1>
+            <nav class="header__menu">
+                <ul class="menu">
+                    <div class="search">
+                        <input type="text" class="search__input">
+                        <button class="search__button">
+                            <img class="search__icon" width="22px" src="/static/icons/search.min.svg" alt="Иконка поиска">
+                        </button>
+                    </div>
+                    <li class="menu__item"><a href="#" class="item__link">Главная</a></li>
+                    <li class="menu__item"><a href="#" class="item__link">Избранное
+                        <div class="favorites__counter">${this.appState.favorites.length}</div>
+                    </a></li>
+                </ul>
+             </nav>
+        `;
+            return this.el;
+        }
+    }
+
     class MainView extends AbstractView {
         state = {
             list: [],
@@ -1038,10 +1079,14 @@
 
         render() {
             const main = document.createElement('div');
-            main.innerHTML = `Число книг: ${this.appState.favorites.length}`;
             this.app.innerHTML = '';
             this.app.append(main);
-            this.appState.favorites.push('d');
+            this.renderHeader();
+        }
+
+        renderHeader() {
+            const header = new Header(this.appState).render();
+            this.app.prepend(header);
         }
     }
 

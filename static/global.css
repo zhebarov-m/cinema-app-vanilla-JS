@@ -1,0 +1,14 @@
+body {
+    width: 100vw;
+    height: 100vh; 
+
+    font-family: monospace, sans-serif;
+    background-image: url('/static/img/background.jpg');
+}
+
+:root {
+    --orange: #CD5334;
+    --cyan: #17BEBB;
+    --white: #fafafa;
+    --backBlack: #2e282a;
+}
